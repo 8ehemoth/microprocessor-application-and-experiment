@@ -1,0 +1,101 @@
+#include <avr/io.h>
+#include <util/delay.h>
+
+unsigned char temp[3]={'0','.','0'}; // 변환값 표시를 위한 상수값 선언 및 초기화
+int Result, i;
+
+void lcd_inst(unsigned char value) // 명령어 입력
+{
+	PORTA &= ~0x02; // RS=0 → PA1=0
+	_delay_ms(1);
+	PORTA |= 0x08; // E=1(& RS=0) → PA3=1
+	_delay_ms(1);
+	PORTC=value; // Instruction 값을 PORTC로 출력
+	_delay_ms(1);
+	PORTA &= 0x00; // E=0 & RS=0로 clear
+	_delay_ms(1);
+}
+
+void lcd_init() // LCD 초기화
+{
+	_delay_ms(50);
+	lcd_inst(0x38);
+	_delay_ms(1);
+	lcd_inst(0b00001100);
+	_delay_ms(1);
+	lcd_inst(0x01);
+	_delay_ms(1);
+	lcd_inst(0b00000110);
+	_delay_ms(1);
+}
+
+void lcd_ch(unsigned char ch)
+{
+	PORTA |= 0x02;
+	_delay_ms(1);
+	PORTA |= 0x08;
+	_delay_ms(1);
+	PORTC=ch;
+	_delay_ms(1);
+	PORTA &= 0x00;
+	_delay_ms(1);
+}
+
+void lcdout(unsigned char add, unsigned char cc)
+{
+	lcd_inst(add | 0x80);
+	_delay_ms(1);
+	lcd_ch(cc);
+}
+
+void lcd_print(char line, char *text)
+{
+	lcd_inst(line | 0x80);
+	while(*text)
+
+	lcd_ch(*text++);
+}
+
+ int main(void)
+ {
+DDRB=0xff;                     // LED 출력 설정
+DDRC=0xff;                     // LCD 출력 설정
+DDRA=0x0A;                     // LCD 출력 설정
+PORTA=0x00;
+lcd_init();                        // LCD 초기화  
+
+lcd_print(0x01,"    Voltage=");
+ _delay_ms(1);  
+
+//--- ADC 초기 설정 ------------------------------------------
+ADMUX=0x00;     // 기준전압 → AREF(외부전압), 우측 정렬 저장,
+           // Single ended input ADC0 채널 선택
+ADCSRA=0x87;    // ADC enable, Division Factor=128    
+while(1)
+ {
+ ADCSRA |=0x40;               // AD 변환 시작: ADSC=1
+ while((ADCSRA&0x10)==0x00);  // AD 변환 완료까지 기다림. ADIF=1 check
+Result = ADC;                 // Result라는 변수에 ADC 변환 값 저장
+_delay_ms(1);               // 변환 시간 확보
+Result=(Result>>2)*50/255;      // X.X로 표시하기위해 변환 결과를
+                                              //  0~50으로 Scale            
+temp[0]=Result/10 + '0';         // 앞자리 LCD 출력 값 추출
+temp[2]=Result%10 + '0';        // 소숫점 뒷자리 LCD 출력 값 추출  
+for(i=0; i<3; i++)
+ {
+ lcdout((0x09+i),temp[i]);     //  LCD로 출력
+}
+ _delay_ms(1);
+
+ //----- ADC 값을 이진수로 표현하여 LED로 출력 ------------------------------
+if(Result ==0)                PORTB=0xff;
+ if(0 <Result && Result <= 7) PORTB=0xfe;
+ if(7 <Result && Result <=14) PORTB=0xfc;
+ if(14<Result && Result <=21) PORTB=0xf8;
+ if(21<Result && Result <=28) PORTB=0xf0;
+ if(28<Result && Result <=35) PORTB=0xe0;
+ if(35<Result && Result <=42) PORTB=0xc0;
+ if(42<Result && Result <=49) PORTB=0x80;
+ if(Result ==50)               PORTB=0x00;
+ }
+ }
