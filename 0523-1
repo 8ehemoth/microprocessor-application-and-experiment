@@ -1,0 +1,40 @@
+#include<avr/io.h>
+#include<avr/interrupt.h>
+ 
+int a = 127.5;
+
+ISR(INT0_vect)
+{
+a = a-63.5;
+}
+
+ISR(INT1_vect)
+{
+a = a+63.5;
+}
+ 
+ int main(void)
+ {
+DDRC=0xff;
+DDRA=0x0A;
+
+
+SREG |= 0x80;
+EIMSK=0x03;
+EICRA=0x0F;
+
+DDRB=0xff;    
+// OC0 출력설정
+
+PORTB=0xff;   // LED off
+TCCR0=0x6f;   // f=61.0351Hz, 분주비 1024, fast PWM mode
+ // clear OC0 on compare Match, set OC0 at BOTTOM
+
+TCNT0=0x00;
+
+	while(1)
+	{
+	OCR0=a;
+	     };    
+}
+ // do nothing
