@@ -13,3 +13,4 @@ AVR을 위한 다양한 예제를 온라인 상에서 찾아볼 수 있음
 
 <img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/68df9b7c-dff9-4898-b859-6d194f750cc0" />
 
+<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/a706e139-d638-4cb1-91c3-5f70243c8475" />
