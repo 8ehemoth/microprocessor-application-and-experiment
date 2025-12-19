@@ -1,0 +1,123 @@
+//추가실습1) 수신 완료 인터럽트(Receive Complete interrupt)를 사용하여 키보드로 수신 받은 값을 하이퍼터미널로 송신하시오. (UCSR1B=0x98)
+
+#include <avr/io.h>
+ #include <util/delay.h>
+ unsigned char temp;
+ int main(void)
+ {
+ UCSR1A=0x00;
+       UCSR1B=0x98;                           // RXEN,TXEN set: 송수신기 enable
+   UCSR1C=0x06;  
+  UBRR1L=0x33;                           // Baud Rate: 19.2k
+ while(1)
+ {
+ if((UCSR1A&0x80)==0x80) {     // 수신 데이터 여부 check  
+ temp=UDR1;                      // 수신 데이터를 임시변수에 저장  
+     while((UCSR1A&0x20)==0x00);     // 송신 가능 check
+ 
+ UDR1=temp;                      // 수신 문자를 송신
+       
+ }}
+ }
+
+//---------------------------------------------------------------------
+
+//추가실습2) 하이퍼터미널에 문자열을 출력하시오.
+
+#include <avr/io.h>
+ #include <util/delay.h>
+ 
+ unsigned char Tmp[16]={'K','N','U','_','c','j',' ','J','e','o','n','g','_','P','E','L'};
+int cnt =0;
+ int main(void)
+ {
+ UCSR1A=0x00;  
+ UCSR1B=0x08;               // TXEN set: 송신기 enable, PD0=RxD
+ UCSR1C=0x06;               // Asynchronous operation, no parity, stop_bit 1,
+                                    //  UCSZ1~0:11 전송문자 8 bit
+ UBRR1H=0x00;  
+ UBRR1L=0x33;               //  UBRR=51 ? 12bit baud rate(19.2k at 16MHz)
+ 
+ while(1)
+{  
+           
+	 for(cnt=0;cnt<16;cnt++)
+	 {
+	 while((UCSR1A&0x20)==0x00);    // 송신버퍼 UDR에 쓸 수 있는지 확인
+            _delay_ms(2000);  
+           
+     _delay_ms(100);
+     
+            UDR1=Tmp[cnt];}                     //  문자 배열 출력
+	if(cnt==16){break;}
+      }
+ }
+
+//-----------------------------------------------------------------
+
+//추가실습3) AD 변환 값을 하이퍼터미널에 출력하시오.
+
+#include <avr/io.h>
+#include <util/delay.h>
+
+unsigned char temp[3]={'0','.','0'}; // 변환값 표시를 위한 상수값 선언 및 초기화
+int Result;
+int i=0;
+
+int main(void)
+{
+
+PORTA=0x00;
+
+TCCR0=0x6f;
+
+
+//--- ADC 초기 설정 ------------------------------------------
+ADMUX=0x00;     // 기준전압 → AREF(외부전압), 우측 정렬 저장,
+           // Single ended input ADC0 채널 선택
+ADCSRA=0b10010111;    // ADC enable, Division Factor=128  
+ 
+while(1)
+{
+ADCSRA |=0x40;               // AD 변환 시작: ADSC=1
+while((ADCSRA&0x10)==0x00);  // AD 변환 완료까지 기다림. ADIF=1 check
+Result = ADC;                 // Result라는 변수에 ADC 변환 값 저장
+_delay_ms(1);               // 변환 시간 확보
+Result=(Result>>2)*50/255;      // X.X로 표시하기위해 변환 결과를
+                                              //  0~50으로 Scale            
+temp[0]=Result/10 + '0';         // 앞자리 LCD 출력 값 추출
+temp[2]=Result%10 + '0';        // 소숫점 뒷자리 LCD 출력 값 추출  
+
+for(i=0; i<3; i++)
+{
+
+               _delay_ms(100);
+
+ UCSR1A=0x00;
+       UCSR1B=0x18;                           // RXEN,TXEN set: 송수신기 enable
+   UCSR1C=0x06;  
+  UBRR1L=0x33;                           // Baud Rate: 19.2k
+
+ 
+
+ UDR1=temp[i];                      // 수신 문자를 송신
+
+
+ 
+ }
+ if(i==3){
+ UDR1=0x0a;
+ _delay_ms(100);
+ UDR1=0x0d;
+ _delay_ms(100);
+ i=0;}
+
+
+}
+_delay_ms(1);
+
+
+
+}
+
+---------------------------------------------------------------------------------------------
