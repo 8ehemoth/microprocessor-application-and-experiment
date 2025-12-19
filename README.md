@@ -1,4 +1,5 @@
 # 마이크로프로세서응용및실험 - ATmega128 실습
+<img width="250" height="250" alt="image" src="https://github.com/user-attachments/assets/68df9b7c-dff9-4898-b859-6d194f750cc0" />
 
 1996년 아트멜이 발표한 고유의 아키텍처를 사용한 8비트 마이크로컨트롤러
 
@@ -11,6 +12,6 @@ AVR을 위한 다양한 예제를 온라인 상에서 찾아볼 수 있음
 아두이노 역시 AVR을 기본으로 함
 
 
-<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/68df9b7c-dff9-4898-b859-6d194f750cc0" />
+
 
 <img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/a706e139-d638-4cb1-91c3-5f70243c8475" />
